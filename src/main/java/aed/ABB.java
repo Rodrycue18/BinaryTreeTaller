@@ -171,13 +171,23 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
                 //Chequeo si es la raiz la que queremos eliminar
                 if(previo == null){
                     raiz = nuevoActual;
-                    nuevoActual.padre = null;
+                    if(nuevoActual != null){
+                        nuevoActual.padre = null;
+                    }
+                    // nuevoActual.padre = null;
                 }else{
                     //Veo en que rama esta el nodo que quiero eliminar,comparando con el de su padre
                     if(actual == previo.izq){
                         previo.izq = nuevoActual;
+                        if(nuevoActual != null){
+                            nuevoActual.padre = previo;
+                        }
+                        
                     }else{
                         previo.der = nuevoActual;
+                        if(nuevoActual != null){
+                            nuevoActual.padre = previo;
+                        }
                     }
                 }   
             }else{
@@ -192,8 +202,16 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
                 //Si aux es null significa que el primer nodo de la derecha no tiene rama izquierda
                 if(aux != null){
                     aux.izq = temporal.der;
+                    if(temporal.der != null){
+                        temporal.der.padre = aux;
+                    }
                 }else{
                     actual.der = temporal.der;
+                    //Concectamos puntero padre de temporal.der, si es temp.der es null no hagas nada, porque si no NUll APUNTARIA A ALGO
+                    if (temporal.der != null) {
+                        temporal.der.padre = actual;
+                    }
+                    
                 }
                 actual.valor = temporal.valor;
 
@@ -260,18 +278,71 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
     }
 
     public String toString(){
-        throw new UnsupportedOperationException("No implementada aun");
+        ABB_Iterador it = new ABB_Iterador();
+        String res = new String();
+        if(cardinal==0){
+            res =  "{}";
+        }else{
+            if(cardinal==1){
+                res = "{" + maximo() + "}";
+            }else{
+                res = "{";
+                res = res + it.siguiente();
+                while (it.haySiguiente()) {
+                    res = res + "," + it.siguiente();
+                }
+                res = res +","+maximo()+"}";
+            }   
+            
+        };
+        return res;
     }
+    
+    private Nodo nodoMinimo(){
+        Nodo actual = raiz;
 
+        if(actual == null){
+            return null;
+        }else{
+           
+            while (actual.izq != null) {
+                actual = actual.izq;
+            }
+            return actual;
+        }
+        
+    }
     private class ABB_Iterador implements Iterador<T> {
-        private Nodo _actual;
+        private Nodo _actual = nodoMinimo();
+        // private Nodo maximo = nodoMaximo();
+        // public ABB_Iterador(){
+        //     // Nodo minimo = new Nodo(minimo());
+        //     this._actual = minimo;
+        // }
 
         public boolean haySiguiente() {            
-            throw new UnsupportedOperationException("No implementada aun");
+            return(_actual != null && _actual.valor.compareTo(maximo())!=0);
         }
     
         public T siguiente() {
-            throw new UnsupportedOperationException("No implementada aun");
+            T res = _actual.valor;
+            _actual = sucesor(_actual);
+            return res;
+        }
+        private Nodo sucesor(Nodo nodo){
+            Nodo res;
+            if(nodo.der != null){
+                res = nodo.der;
+                while(res.izq!= null){
+                    res = res.izq;
+                }    
+            }else{
+                res = nodo.padre;
+                while (res.der!=null && res.der.valor.equals(nodo.valor)) {
+                    res = res.padre;
+                }
+            }
+            return res;
         }
     }
 
